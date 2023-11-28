@@ -45,11 +45,11 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Row(
               children: [
-                ElevatedButton(onPressed: () {}, child: Text('Livros')),
+                ElevatedButton(onPressed: () {}, child: const Text('Livros')),
                 const SizedBox(
                   width: 6,
                 ),
-                ElevatedButton(onPressed: () {}, child: Text('Favoritos')),
+                ElevatedButton(onPressed: () {}, child: const Text('Favoritos')),
               ],
             ),
             const SizedBox(

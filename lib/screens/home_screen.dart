@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_blurhash/flutter_blurhash.dart';
 
 class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
@@ -29,7 +28,7 @@ class HomeScreen extends StatelessWidget {
             Row(
               children: [
                 ElevatedButton(onPressed: (){}, child: Text('Livros')),
-                SizedBox(width: 6,),
+                 const SizedBox(width: 6,),
                 ElevatedButton(onPressed: (){}, child: Text('Favoritos')),
               ],
             ),
@@ -42,74 +41,90 @@ class HomeScreen extends StatelessWidget {
                 ),
                 itemCount: covers.length,
                 itemBuilder: (BuildContext context, int index) {
-                  return GestureDetector(
-                    onTap: () {
-                      //TODO: implementar acesso ao conteudo do livro
-                    },
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10.0),
-                      child: Container(
-
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10.0),
-                          color: Colors.grey
-                        ),
-                        child: Stack (
-                          fit: StackFit.expand,
-                          children: [
-
-
-                            Image.network(
-                              covers[index],
-                              fit: BoxFit.contain,
-                            ),
-                            const Positioned(
-                              top: 0,
-                              right: 8.0,
-                              child: InkWell(
-                               //TODO: Implementar
-                                child: Icon(
-                                  Icons.bookmark,
-                                  color: Colors.amber,
-                                  size: 32.0,
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              bottom: 0,
-                              left: 0,
-                              right: 0,
-                              child: Container(
-                                color: Colors.black.withOpacity(0.6),
-                                child:  const Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children:  [
-                                    Text(
-                                      'Title',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(
-                                      'Author',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
+                  return HomeScreenTile(covers: covers, index: index);
                 },
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class HomeScreenTile extends StatelessWidget {
+  const HomeScreenTile({
+    super.key,
+    required this.covers,
+    required this.index,
+  });
+
+  final List<String> covers;
+  final int index;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        //TODO: implementar acesso ao conteudo do livro
+      },
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10.0),
+        child: Container(
+
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10.0),
+            color: Colors.grey
+          ),
+          child: Stack (
+            fit: StackFit.expand,
+            children: [
+
+
+              Image.network(
+                covers[index],
+                fit: BoxFit.contain,
+              ),
+              const Positioned(
+                top: 0,
+                right: 8.0,
+                child: InkWell(
+                 //TODO: Implementar
+                  child: Icon(
+                    Icons.bookmark,
+                    color: Colors.amber,
+                    size: 32.0,
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  color: Colors.black.withOpacity(0.6),
+                  child:  const Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children:  [
+                      Text(
+                        'Title',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Author',
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

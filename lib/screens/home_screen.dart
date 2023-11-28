@@ -32,6 +32,7 @@ class HomeScreen extends StatelessWidget {
                 ElevatedButton(onPressed: (){}, child: Text('Favoritos')),
               ],
             ),
+            const SizedBox(height: 8,),
             Expanded(
               child: GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(

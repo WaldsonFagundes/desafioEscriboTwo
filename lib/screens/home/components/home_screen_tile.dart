@@ -1,83 +1,10 @@
 import 'dart:io';
-import 'dart:ui';
-import 'package:flutter/material.dart';
+
+import 'package:desafio_escribo_two/models/models.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:vocsy_epub_viewer/epub_viewer.dart';
-
-import '../models/models.dart';
-import '../services/services.dart';
-
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  List<Book> books = [];
-
-  Future<void> fetchBookData() async {
-    try {
-      List<Book> fetchedBooks = await fetchBooks();
-      setState(() {
-        books = fetchedBooks;
-      });
-    } catch (e) {
-      print('Erro ao carregar livros: $e');
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    fetchBookData();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Minha Biblioteca'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                ElevatedButton(onPressed: () {}, child: Text('Livros')),
-                const SizedBox(
-                  width: 6,
-                ),
-                ElevatedButton(onPressed: () {}, child: Text('Favoritos')),
-              ],
-            ),
-            const SizedBox(
-              height: 8,
-            ),
-            Expanded(
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12.0,
-                  mainAxisSpacing: 12.0,
-                ),
-                itemCount: books.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return HomeScreenTile(book: books, index: index);
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-//------------------------
 
 class HomeScreenTile extends StatefulWidget {
   const HomeScreenTile({
@@ -104,6 +31,7 @@ class _HomeScreenTileState extends State<HomeScreenTile> {
 
   @override
   Widget build(BuildContext context) {
+
     startDownload(String urlDownload) async {
       setState(() {});
       Directory? appDocDir = Platform.isAndroid
@@ -112,6 +40,8 @@ class _HomeScreenTileState extends State<HomeScreenTile> {
 
       String path = appDocDir!.path + '/sample.epub';
       File file = File(path);
+      //TODO: delete
+      debugPrint('xxxxxxxxxx' + path);
 
       if (!File(path).existsSync()) {
         await file.create();
@@ -137,7 +67,9 @@ class _HomeScreenTileState extends State<HomeScreenTile> {
 
     return GestureDetector(
       onTap: () async {
-        startDownload(widget.book[widget.index].downloadUrl).whenComplete(() {
+        await startDownload(widget.book[widget.index].downloadUrl);
+
+        if(filePath.isNotEmpty){
           VocsyEpub.setConfig(
             themeColor: Theme.of(context).primaryColor,
             identifier: "iosBook",
@@ -147,9 +79,7 @@ class _HomeScreenTileState extends State<HomeScreenTile> {
             nightMode: true,
           );
 
-          VocsyEpub.locatorStream.listen((locator) {
-            print('LOCATOR: $locator');
-          });
+
           VocsyEpub.open(
             filePath,
             lastLocation: EpubLocator.fromJson({
@@ -159,7 +89,15 @@ class _HomeScreenTileState extends State<HomeScreenTile> {
               "locations": {"cfi": "epubcfi(/0!/4/4[simple_book]/2/2/6)"}
             }),
           );
+        } else {
+          debugPrint('Download fail');
+        }
+        VocsyEpub.locatorStream.listen((locator) {
+          print('LOCATOR: $locator');
         });
+
+
+
 
       },
       child: ClipRRect(

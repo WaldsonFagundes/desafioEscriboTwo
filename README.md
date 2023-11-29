@@ -31,6 +31,7 @@
 - Arquivo .apk da versão final do projeto disponível para testes.
 
 ### Execução
+<<<<<<< HEAD
 
 - **Baixando e Executando via IDE:**
     - Clone o projeto para sua máquina usando uma IDE como Android Studio ou VSCode.
@@ -41,3 +42,4 @@
     - Transfira o arquivo .apk para o seu dispositivo Android.
     - No dispositivo, acesse o arquivo .apk e siga as instruções para instalação do aplicativo.
     - Após a instalação, execute o aplicativo normalmente.
+

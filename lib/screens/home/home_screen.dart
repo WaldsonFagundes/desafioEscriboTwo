@@ -1,9 +1,9 @@
-
 import 'package:desafio_escribo_two/screens/home/components/components.dart';
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
 
 import '../../models/models.dart';
+import '../../providers/favorites_providers.dart';
 import '../../services/services.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -15,6 +15,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Book> books = [];
+  bool showFavorites = false;
 
   Future<void> fetchBookData() async {
     try {
@@ -27,6 +28,12 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void showOnlyFavorites() {
+    setState(() {
+      showFavorites = !showFavorites;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -35,6 +42,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final favoritesProvider =
+        Provider.of<FavoritesProvider>(context).favoriteBooksProvider;
+    // books = showFavorites ? favoritesProvider.favoriteBooksProvider : books;
+
+    debugPrint(
+        'booooooks ' + books.map((e) => e.author).toString() + 'xxxxxxxxxxx');
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Minha Biblioteca'),
@@ -45,13 +59,25 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Row(
               children: [
-                ElevatedButton(onPressed: () {
-                  Navigator.pushNamed(context, '/my_books');
-                }, child: const Text('Meus livros')),
+                ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/my_books');
+                    },
+                    child: const Text('Meus livros')),
                 const SizedBox(
                   width: 6,
                 ),
-                ElevatedButton(onPressed: () {}, child: const Text('Favoritos')),
+                //Botão favorito
+                ElevatedButton(
+                  onPressed: () {
+                    showOnlyFavorites();
+                    debugPrint('xxxx bool' + showFavorites.toString());
+                  },
+                  child: const Text('Favoritos'),
+                  style: ButtonStyle(
+                    backgroundColor: showFavorites ? MaterialStateProperty.all<Color>(Colors.red.withOpacity(0.5)) : null
+                  ),
+                ),
               ],
             ),
             const SizedBox(
@@ -64,9 +90,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisSpacing: 12.0,
                   mainAxisSpacing: 12.0,
                 ),
-                itemCount: books.length,
+                itemCount:
+                    showFavorites ? favoritesProvider.length : books.length,
                 itemBuilder: (BuildContext context, int index) {
-                  return HomeScreenTile(book: books, index: index);
+                  return showFavorites
+                      ? HomeScreenTile(book: favoritesProvider, index: index)
+                      : HomeScreenTile(book: books, index: index);
                 },
               ),
             ),
@@ -76,9 +105,3 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-
-
-
-
-
-

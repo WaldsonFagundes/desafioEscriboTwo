@@ -5,7 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../providers/favorites_providers.dart';
 
 class HomeScreenTile extends StatefulWidget {
   const HomeScreenTile({
@@ -137,6 +140,9 @@ class _HomeScreenTileState extends State<HomeScreenTile> {
 
   @override
   Widget build(BuildContext context) {
+
+    initializeSharedPreferences().then((_) => loadFavoriteBooks());
+     Provider.of<FavoritesProvider>(context, listen: false).favoriteBooksProvider = favoriteBooks;
     return Center(
       child: _downloading
           ? const Column(

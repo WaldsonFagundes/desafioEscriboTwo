@@ -29,7 +29,6 @@ class _MyBooksScreenState extends State<MyBooksScreen> {
   late List<File> _bookFiles = [];
   String filePath = "";
 
-
   @override
   void initState() {
     super.initState();
@@ -38,7 +37,7 @@ class _MyBooksScreenState extends State<MyBooksScreen> {
     _loadBookFiles();
   }
 
-  void deleteFile( String path){
+  void deleteFile(String path) {
     File file = File(path);
 
     file.deleteSync();
@@ -47,7 +46,7 @@ class _MyBooksScreenState extends State<MyBooksScreen> {
       _loadBookFiles();
     });
 
-    if(!file.existsSync()){
+    if (!file.existsSync()) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Livro deletado'),
@@ -62,8 +61,6 @@ class _MyBooksScreenState extends State<MyBooksScreen> {
         ),
       );
     }
-
-
   }
 
   Future<void> _loadBookFiles() async {
@@ -78,14 +75,17 @@ class _MyBooksScreenState extends State<MyBooksScreen> {
 
   Book matchBook(File fileName) {
     for (var book in books) {
-      if (fileName.path
+
+      if (fileName.path.split('/').last.contains(book.downloadUrl
+          .replaceAll(".epub3.images", ".epub")
+          .replaceAll(".epub.noimages", ".epub")
+          .replaceAll(".epub.images", ".epub")
           .split('/')
-          .last
-          .contains(book.downloadUrl.replaceAll(".epub3.images", ".epub").split('/').last)) {
+          .last)) {
         return book;
       }
     }
-    return Book (id: 0, title: '', author: '', coverUrl: '', downloadUrl: '');
+    return Book(id: 0, title: '', author: '', coverUrl: '', downloadUrl: '');
   }
 
   @override
@@ -105,95 +105,88 @@ class _MyBooksScreenState extends State<MyBooksScreen> {
           ),
           itemBuilder: (context, index) {
             return GestureDetector(
-                onTap: () async {
+              onTap: () async {
                 filePath = _bookFiles[index].path;
 
-                 VocsyEpub.setConfig(
-                   themeColor: Theme.of(context).primaryColor,
-                   identifier: "iosBook",
-                   scrollDirection: EpubScrollDirection.ALLDIRECTIONS,
-                   allowSharing: true,
-                   enableTts: true,
-                   nightMode: true,
-                 );
+                VocsyEpub.setConfig(
+                  themeColor: Theme.of(context).primaryColor,
+                  identifier: "iosBook",
+                  scrollDirection: EpubScrollDirection.ALLDIRECTIONS,
+                  allowSharing: true,
+                  enableTts: true,
+                  nightMode: true,
+                );
 
-                 VocsyEpub.locatorStream.listen((locator) {
-                   print('LOCATOR: $locator');
-                 });
+                VocsyEpub.locatorStream.listen((locator) {
+                  print('LOCATOR: $locator');
+                });
 
-                 VocsyEpub.open(
-                   filePath,
-                   lastLocation: EpubLocator.fromJson({
-                     "bookId": "2239",
-                     "href": "/OEBPS/ch06.xhtml",
-                     "created": 1539934158390,
-                     "locations": {"cfi": "epubcfi(/0!/4/4[simple_book]/2/2/6)"}
-                   }),
-                 );
-
-                },
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10.0),
-                        color: Colors.grey),
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Image.network(
-
-                          matchBook(_bookFiles[index]).coverUrl,
-
-                          fit: BoxFit.contain,
-                        ),
-                         Positioned(
+                VocsyEpub.open(
+                  filePath,
+                  lastLocation: EpubLocator.fromJson({
+                    "bookId": "2239",
+                    "href": "/OEBPS/ch06.xhtml",
+                    "created": 1539934158390,
+                    "locations": {"cfi": "epubcfi(/0!/4/4[simple_book]/2/2/6)"}
+                  }),
+                );
+              },
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10.0),
+                      color: Colors.grey),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Image.network(
+                        matchBook(_bookFiles[index]).coverUrl,
+                        fit: BoxFit.contain,
+                      ),
+                      Positioned(
                           top: 0,
                           left: 8.0,
                           //botao deletar
                           child: IconButton.outlined(
-                              onPressed: (){
-
+                              onPressed: () {
                                 filePath = _bookFiles[index].path;
-                                  deleteFile(filePath);
-
+                                deleteFile(filePath);
                               },
-                              icon: Icon(Icons.delete_outline))
-                        ),
-
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          child: Container(
-                            color: Colors.black.withOpacity(0.6),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  matchBook(_bookFiles[index]).title,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  maxLines: 1,
+                              icon: Icon(Icons.delete_outline))),
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          color: Colors.black.withOpacity(0.6),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                matchBook(_bookFiles[index]).title,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                                Text(
-                                  matchBook(_bookFiles[index]).author,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                  ),
-                                  maxLines: 1,
+                                maxLines: 1,
+                              ),
+                              Text(
+                                matchBook(_bookFiles[index]).author,
+                                style: const TextStyle(
+                                  color: Colors.white,
                                 ),
-                              ],
-                            ),
+                                maxLines: 1,
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              );
+              ),
+            );
           },
         ),
       ),

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreenTile extends StatefulWidget {
   const HomeScreenTile({
@@ -23,17 +24,26 @@ class HomeScreenTile extends StatefulWidget {
 class _HomeScreenTileState extends State<HomeScreenTile> {
   bool _downloading = false;
 
+  List<Book> favoriteBooks = [];
+  late SharedPreferences prefs;
+
   Future<void> _startDownload(int index) async {
     setState(() {
       _downloading = true;
     });
 
     try {
-      final response = await http.get(Uri.parse(widget.book[index].downloadUrl));
+      final response =
+          await http.get(Uri.parse(widget.book[index].downloadUrl));
 
       if (response.statusCode == 200) {
         final appDocDir = await getApplicationDocumentsDirectory();
-        final fileName = widget.book[index].downloadUrl.replaceAll(".epub3.images", ".epub").replaceAll(".epub.noimages", ".epub").replaceAll(".epub.images", ".epub").split('/').last;
+        final fileName = widget.book[index].downloadUrl
+            .replaceAll(".epub3.images", ".epub")
+            .replaceAll(".epub.noimages", ".epub")
+            .replaceAll(".epub.images", ".epub")
+            .split('/')
+            .last;
         final sourceFilePath = '${appDocDir.path}/$fileName';
 
         final sourceFile = File(sourceFilePath);
@@ -58,7 +68,7 @@ class _HomeScreenTileState extends State<HomeScreenTile> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Livro baixado com sucesso'),
-              duration: Duration(seconds: 3), // Duração da SnackBar
+              duration: Duration(seconds: 3),
             ),
           );
         });
@@ -76,12 +86,53 @@ class _HomeScreenTileState extends State<HomeScreenTile> {
         );
       });
     }
-
   }
 
   @override
   void initState() {
+    initializeSharedPreferences().then((_) => loadFavoriteBooks());
     super.initState();
+  }
+
+  void toggleFavorite(int index) {
+    setState(() {
+      widget.book[index].isFavorite = !widget.book[index].isFavorite;
+      if (widget.book[index].isFavorite) {
+        favoriteBooks.add(widget.book[index]);
+      } else {
+        favoriteBooks.remove(widget.book[index]);
+      }
+
+      saveFavoriteBooks();
+    });
+  }
+
+  Future<void> initializeSharedPreferences() async {
+    prefs = await SharedPreferences.getInstance();
+  }
+
+  Future<void> loadFavoriteBooks() async {
+    List<int> favoriteIndices = prefs
+            .getStringList('favoriteBooks')
+            ?.map((index) => int.parse(index))
+            .toList() ??
+        [];
+
+    setState(() {
+      favoriteBooks =
+          favoriteIndices.map((index) => widget.book[index]).toList();
+      for (Book book in favoriteBooks) {
+        book.isFavorite = true;
+      }
+    });
+  }
+
+  void saveFavoriteBooks() {
+    List<String> favoriteIndices = favoriteBooks
+        .map((book) => widget.book.indexOf(book).toString())
+        .toList();
+
+    prefs.setStringList('favoriteBooks', favoriteIndices);
   }
 
   @override
@@ -92,7 +143,7 @@ class _HomeScreenTileState extends State<HomeScreenTile> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CircularProgressIndicator(),
-                Text('Downloading.... E-pub'),
+                Text('Downloading'),
               ],
             )
           : GestureDetector(
@@ -112,14 +163,18 @@ class _HomeScreenTileState extends State<HomeScreenTile> {
                         widget.book[widget.index].coverUrl,
                         fit: BoxFit.contain,
                       ),
-                      const Positioned(
+                      Positioned(
                         top: 0,
                         right: 8.0,
                         child: InkWell(
-                          //TODO: Implementar
+                          onTap: () {
+                            toggleFavorite(widget.index);
+                          },
                           child: Icon(
                             Icons.bookmark,
-                            color: Colors.amber,
+                            color: widget.book[widget.index].isFavorite
+                                ? Colors.red
+                                : Colors.white,
                             size: 32.0,
                           ),
                         ),
@@ -160,231 +215,3 @@ class _HomeScreenTileState extends State<HomeScreenTile> {
     );
   }
 }
-
-/*
-
-
-import 'dart:io';
-
-import 'package:desafio_escribo_two/models/models.dart';
-import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:vocsy_epub_viewer/epub_viewer.dart';
-
-class HomeScreenTile extends StatefulWidget {
-  const HomeScreenTile({
-    super.key,
-    required this.book,
-    required this.index,
-  });
-
-  final List<Book> book;
-  final int index;
-
-  @override
-  State<HomeScreenTile> createState() => _HomeScreenTileState();
-}
-
-class _HomeScreenTileState extends State<HomeScreenTile> {
-  final platform = const MethodChannel('my_channel');
-  bool loading = false;
-  Dio dio = Dio();
-  String filePath = "";
-
-  @override
-  void initState() {
-    download("");
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: loading ?
-      const Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircularProgressIndicator(),
-          Text('Downloading.... E-pub'),
-        ],
-      )
-          : GestureDetector(
-        onTap: () async {
-          if (filePath == "") {
-            download(widget.book[widget.index].downloadUrl);
-          } else {
-            VocsyEpub.setConfig(
-              themeColor: Theme.of(context).primaryColor,
-              identifier: "iosBook",
-              scrollDirection: EpubScrollDirection.ALLDIRECTIONS,
-              allowSharing: true,
-              enableTts: true,
-              nightMode: true,
-            );
-
-            VocsyEpub.locatorStream.listen((locator) {
-              print('LOCATOR: $locator');
-            });
-
-            VocsyEpub.open(
-              filePath,
-              lastLocation: EpubLocator.fromJson({
-                "bookId": "2239",
-                "href": "/OEBPS/ch06.xhtml",
-                "created": 1539934158390,
-                "locations": {"cfi": "epubcfi(/0!/4/4[simple_book]/2/2/6)"}
-              }),
-            );
-          }
-        },
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10.0),
-          child: Container(
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10.0), color: Colors.grey),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                Image.network(
-                  widget.book[widget.index].coverUrl,
-                  fit: BoxFit.contain,
-                ),
-                const Positioned(
-                  top: 0,
-                  right: 8.0,
-                  child: InkWell(
-                    //TODO: Implementar
-                    child: Icon(
-                      Icons.bookmark,
-                      color: Colors.amber,
-                      size: 32.0,
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    color: Colors.black.withOpacity(0.6),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          widget.book[widget.index].title,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 1,
-                        ),
-                        Text(
-                          widget.book[widget.index].author,
-                          style: const TextStyle(
-                            color: Colors.white,
-                          ),
-                          maxLines: 1,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> fetchAndroidVersion(String url) async {
-    final String? version = await getAndroidVersion();
-    if (version != null) {
-      String? firstPart;
-      if (version.toString().contains(".")) {
-        int indexOfFirstDot = version.indexOf(".");
-        firstPart = version.substring(0, indexOfFirstDot);
-      } else {
-        firstPart = version;
-      }
-      int intValue = int.parse(firstPart);
-      if (intValue >= 13) {
-        await startDownload(url);
-      } else {
-        final PermissionStatus status = await Permission.storage.request();
-        if (status == PermissionStatus.granted) {
-          await startDownload(url);
-        } else {
-          await Permission.storage.request();
-        }
-      }
-      print("ANDROID VERSION: $intValue");
-    }
-  }
-
-  Future<String?> getAndroidVersion() async {
-    try {
-      final String version = await platform.invokeMethod('getAndroidVersion');
-      return version;
-    } on PlatformException catch (e) {
-      print("FAILED TO GET ANDROID VERSION: ${e.message}");
-      return null;
-    }
-  }
-
-  startDownload(String url) async {
-    setState(() {
-      loading = true;
-    });
-    Directory? appDocDir = Platform.isAndroid
-        ? await getExternalStorageDirectory()
-        : await getApplicationDocumentsDirectory();
-
-    String path = '${appDocDir!.path}/sample.epub';
-    File file = File(path);
-
-    if (!File(path).existsSync()) {
-      await file.create();
-      await dio.download(
-        url,
-        path,
-        deleteOnError: true,
-        onReceiveProgress: (receivedBytes, totalBytes) {
-          print('Download --- ${(receivedBytes / totalBytes) * 100}');
-          setState(() {
-            loading = true;
-          });
-        },
-      ).whenComplete(() {
-        setState(() {
-          loading = false;
-          filePath = path;
-        });
-      });
-    } else {
-      setState(() {
-        loading = false;
-        filePath = path;
-      });
-    }
-  }
-
-  download(String url) async {
-    if (Platform.isIOS) {
-      final PermissionStatus status = await Permission.storage.request();
-      if (status == PermissionStatus.granted) {
-        await startDownload(url);
-      } else {
-        await Permission.storage.request();
-      }
-    } else if (Platform.isAndroid) {
-      await fetchAndroidVersion(url);
-    } else {
-      PlatformException(code: '500');
-    }
-  }
-}
-*/

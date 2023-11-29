@@ -47,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 ElevatedButton(onPressed: () {
                   Navigator.pushNamed(context, '/my_books');
-                }, child: const Text('Livros')),
+                }, child: const Text('Meus livros')),
                 const SizedBox(
                   width: 6,
                 ),

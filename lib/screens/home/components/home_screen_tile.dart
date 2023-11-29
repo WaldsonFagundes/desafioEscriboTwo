@@ -33,7 +33,7 @@ class _HomeScreenTileState extends State<HomeScreenTile> {
 
       if (response.statusCode == 200) {
         final appDocDir = await getApplicationDocumentsDirectory();
-        final fileName = widget.book[index].downloadUrl.split('/').last;
+        final fileName = widget.book[index].downloadUrl.replaceAll(".epub3.images", ".epub").replaceAll(".epub.noimages", ".epub").replaceAll(".epub.images", ".epub").split('/').last;
         final sourceFilePath = '${appDocDir.path}/$fileName';
 
         final sourceFile = File(sourceFilePath);
@@ -71,7 +71,7 @@ class _HomeScreenTileState extends State<HomeScreenTile> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Falha ao baixar o livro'),
-            duration: Duration(seconds: 3), // Duração da SnackBar
+            duration: Duration(seconds: 3),
           ),
         );
       });

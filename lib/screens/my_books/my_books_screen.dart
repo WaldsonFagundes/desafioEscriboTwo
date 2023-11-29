@@ -8,6 +8,8 @@ import '../../models/book.dart';
 import '../../services/services.dart';
 
 class MyBooksScreen extends StatefulWidget {
+  const MyBooksScreen({super.key});
+
   @override
   _MyBooksScreenState createState() => _MyBooksScreenState();
 }

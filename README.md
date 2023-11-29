@@ -31,7 +31,6 @@
 - Arquivo .apk da versão final do projeto disponível para testes.
 
 ### Execução
-<<<<<<< HEAD
 
 - **Baixando e Executando via IDE:**
     - Clone o projeto para sua máquina usando uma IDE como Android Studio ou VSCode.

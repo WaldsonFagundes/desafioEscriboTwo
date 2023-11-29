@@ -1,0 +1,1 @@
+export './favorites_providers.dart';

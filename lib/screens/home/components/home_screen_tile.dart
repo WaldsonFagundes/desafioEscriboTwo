@@ -1,14 +1,13 @@
 import 'dart:io';
 
-import 'package:desafio_escribo_two/models/models.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../providers/favorites_providers.dart';
+import '../../../models/models.dart';
 
 class HomeScreenTile extends StatefulWidget {
   const HomeScreenTile({
@@ -26,9 +25,14 @@ class HomeScreenTile extends StatefulWidget {
 
 class _HomeScreenTileState extends State<HomeScreenTile> {
   bool _downloading = false;
-
   List<Book> favoriteBooks = [];
   late SharedPreferences prefs;
+
+  @override
+  void initState() {
+    initializeSharedPreferences().then((_) => loadFavoriteBooks());
+    super.initState();
+  }
 
   Future<void> _startDownload(int index) async {
     setState(() {
@@ -91,12 +95,6 @@ class _HomeScreenTileState extends State<HomeScreenTile> {
     }
   }
 
-  @override
-  void initState() {
-    initializeSharedPreferences().then((_) => loadFavoriteBooks());
-    super.initState();
-  }
-
   void toggleFavorite(int index) {
     setState(() {
       widget.book[index].isFavorite = !widget.book[index].isFavorite;
@@ -107,6 +105,7 @@ class _HomeScreenTileState extends State<HomeScreenTile> {
       }
 
       saveFavoriteBooks();
+
     });
   }
 
@@ -122,8 +121,11 @@ class _HomeScreenTileState extends State<HomeScreenTile> {
         [];
 
     setState(() {
-      favoriteBooks =
-          favoriteIndices.map((index) => widget.book[index]).toList();
+      favoriteBooks = favoriteIndices
+          .where((index) => index < widget.book.length)
+          .map((index) => widget.book[index])
+          .toList();
+
       for (Book book in favoriteBooks) {
         book.isFavorite = true;
       }
@@ -142,7 +144,8 @@ class _HomeScreenTileState extends State<HomeScreenTile> {
   Widget build(BuildContext context) {
 
     initializeSharedPreferences().then((_) => loadFavoriteBooks());
-     Provider.of<FavoritesProvider>(context, listen: false).favoriteBooksProvider = favoriteBooks;
+    Provider.of<FavoritesProvider>(context, listen: false).favoriteBooksProvider = favoriteBooks;
+
     return Center(
       child: _downloading
           ? const Column(
@@ -194,13 +197,16 @@ class _HomeScreenTileState extends State<HomeScreenTile> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                widget.book[widget.index].title,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
+                              Center(
+                                child: Text(
+                                  widget.book[widget.index].title,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    overflow: TextOverflow.fade
+                                  ),
+                                  maxLines: 1,
                                 ),
-                                maxLines: 1,
                               ),
                               Text(
                                 widget.book[widget.index].author,

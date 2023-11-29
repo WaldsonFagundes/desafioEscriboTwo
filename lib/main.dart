@@ -1,10 +1,8 @@
-
-import 'package:desafio_escribo_two/providers/favorites_providers.dart';
-import 'package:desafio_escribo_two/screens/my_books/my_books_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../screens/screens.dart';
+import '../providers/providers.dart';
 
 void main() {
   runApp(
@@ -27,7 +25,7 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => HomeScreen(),
+        '/': (context) => const HomeScreen(),
         '/my_books': (context) => MyBooksScreen(),
       },
     );

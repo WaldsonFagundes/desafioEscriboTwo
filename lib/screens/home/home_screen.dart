@@ -1,10 +1,10 @@
-import 'package:desafio_escribo_two/screens/home/components/components.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/models.dart';
-import '../../providers/favorites_providers.dart';
+import '../../providers/providers.dart';
 import '../../services/services.dart';
+import '../screens.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -44,10 +44,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final favoritesProvider =
         Provider.of<FavoritesProvider>(context).favoriteBooksProvider;
-    // books = showFavorites ? favoritesProvider.favoriteBooksProvider : books;
-
-    debugPrint(
-        'booooooks ' + books.map((e) => e.author).toString() + 'xxxxxxxxxxx');
 
     return Scaffold(
       appBar: AppBar(
@@ -63,6 +59,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     onPressed: () {
                       Navigator.pushNamed(context, '/my_books');
                     },
+                    style: ButtonStyle(
+                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0)
+                        )
+                      )
+                    ),
                     child: const Text('Meus livros')),
                 const SizedBox(
                   width: 6,
@@ -71,13 +74,23 @@ class _HomeScreenState extends State<HomeScreen> {
                 ElevatedButton(
                   onPressed: () {
                     showOnlyFavorites();
-                    debugPrint('xxxx bool' + showFavorites.toString());
                   },
-                  child: const Text('Favoritos'),
                   style: ButtonStyle(
-                    backgroundColor: showFavorites ? MaterialStateProperty.all<Color>(Colors.red.withOpacity(0.5)) : null
+                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                    foregroundColor: showFavorites
+                        ? MaterialStateProperty.all<Color>(Colors.white)
+                        : null,
+                    backgroundColor: showFavorites
+                        ? MaterialStateProperty.all<Color>(
+                            Colors.red.withOpacity(0.5))
+                        : null,
                   ),
-                ),
+                  child: const Text('Favoritos'),
+                )
               ],
             ),
             const SizedBox(

@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-import '../models/book.dart';
+import '../models/models.dart';
 
 class FavoritesProvider extends ChangeNotifier {
   List<Book> favoriteBooksProvider = [];
